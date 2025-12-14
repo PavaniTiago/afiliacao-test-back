@@ -8,12 +8,16 @@ async function bootstrap() {
     console.log('📋 Environment variables:');
     console.log('  - NODE_ENV:', process.env.NODE_ENV || 'development');
     console.log('  - PORT:', process.env.PORT || '3000');
-    console.log('  - DB_HOST:', process.env.DB_HOST || 'not set');
-    console.log('  - DB_NAME:', process.env.DB_NAME || 'not set');
+    console.log(
+      '  - DATABASE_URL:',
+      process.env.DATABASE_URL ? '***set***' : 'NOT SET!',
+    );
     console.log(
       '  - AUTH_SECRET:',
       process.env.AUTH_SECRET ? '***set***' : 'not set',
     );
+    console.log('  - APP_URL:', process.env.APP_URL || 'not set');
+    console.log('  - FRONTEND_URL:', process.env.FRONTEND_URL || 'not set');
 
     const app = await NestFactory.create(AppModule, {
       logger: ['error', 'warn', 'log', 'debug', 'verbose'],
