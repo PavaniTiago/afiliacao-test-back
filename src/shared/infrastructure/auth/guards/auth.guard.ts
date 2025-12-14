@@ -32,6 +32,11 @@ export class AuthGuard implements CanActivate {
 
   private extractTokenFromCookie(request: any): string | null {
     const cookies = request.cookies || {};
-    return cookies['better-auth.session_token'] || null;
+    // Em produção com secure cookies, o prefixo __Secure- é adicionado
+    return (
+      cookies['__Secure-better-auth.session_token'] ||
+      cookies['better-auth.session_token'] ||
+      null
+    );
   }
 }
