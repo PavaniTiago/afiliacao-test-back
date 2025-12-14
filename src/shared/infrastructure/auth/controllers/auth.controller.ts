@@ -8,7 +8,6 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Req() req: Request, @Res() res: Response) {
-    // Em produção com secure cookies, o prefixo __Secure- é adicionado
     const token =
       (req.cookies?.['__Secure-better-auth.session_token'] as string) ||
       (req.cookies?.['better-auth.session_token'] as string) ||
@@ -22,7 +21,6 @@ export class AuthController {
     const isCrossOrigin = process.env.CROSS_ORIGIN === 'true';
     const needsCrossOriginCookies = isProduction || isCrossOrigin;
 
-    // Limpar ambos os cookies (com e sem prefixo __Secure-)
     res.clearCookie('better-auth.session_token', {
       httpOnly: true,
       secure: needsCrossOriginCookies,

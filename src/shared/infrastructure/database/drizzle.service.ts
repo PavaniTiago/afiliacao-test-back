@@ -9,18 +9,14 @@ export class DrizzleService implements OnModuleDestroy {
   private client: postgres.Sql;
 
   constructor(private configService: ConfigService) {
-    // Railway pode fornecer DATABASE_URL ou variáveis separadas
-    // Também suporta variáveis PGHOST, PGUSER, etc.
     const databaseUrl = this.configService.get('DATABASE_URL');
 
     let connectionString: string;
 
     if (databaseUrl) {
-      // Usa DATABASE_URL se disponível (formato do Railway)
       connectionString = databaseUrl;
       console.log('🔌 Connecting to database using DATABASE_URL...');
     } else {
-      // Usa variáveis separadas ou fallback para Railway PGHOST, etc.
       const dbUser =
         this.configService.get('DB_USER') ||
         this.configService.get('PGUSER') ||
@@ -55,7 +51,7 @@ export class DrizzleService implements OnModuleDestroy {
         max: 10,
         idle_timeout: 20,
         connect_timeout: 10,
-        onnotice: () => {}, // Suppress notices
+        onnotice: () => {},
       });
 
       this.db = drizzle(this.client);
