@@ -33,12 +33,28 @@ export class AuthController {
   @All('*')
   async handleAuth(@Req() req: Request, @Res() res: Response) {
     try {
-      const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+      const baseURL =
+        process.env.APP_URL ||
+        process.env.BASE_URL ||
+        `${req.protocol}://${req.get('host')}`;
+
+      const url = `${baseURL}${req.originalUrl}`;
+
+      const headers = new Headers();
+      Object.keys(req.headers).forEach((key) => {
+        const value = req.headers[key];
+        if (value && typeof value === 'string') {
+          headers.set(key, value);
+        } else if (Array.isArray(value)) {
+          value.forEach((v) => headers.append(key, v));
+        }
+      });
+
       const webRequest = new Request(url, {
         method: req.method,
-        headers: req.headers as HeadersInit,
+        headers: headers,
         body:
-          req.method !== 'GET' && req.method !== 'HEAD'
+          req.method !== 'GET' && req.method !== 'HEAD' && req.body
             ? JSON.stringify(req.body)
             : undefined,
       });
@@ -51,7 +67,9 @@ export class AuthController {
 
         const setCookieHeaders = response.headers.getSetCookie?.() || [];
         if (setCookieHeaders.length > 0) {
-          res.setHeader('Set-Cookie', setCookieHeaders);
+          setCookieHeaders.forEach((cookie) => {
+            res.appendHeader('Set-Cookie', cookie);
+          });
         }
 
         response.headers.forEach((value, key) => {
@@ -69,7 +87,14 @@ export class AuthController {
 
       return res.status(404).json({ message: 'Not found' });
     } catch {
-      return res.status(500).json({ message: 'Internal server error' });
+      console.error('Auth handler error: Internal server error');
+      return res.status(500).json({
+        message: 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? 'Internal server error'
+            : undefined,
+      });
     }
   }
 }

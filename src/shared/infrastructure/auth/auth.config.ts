@@ -8,7 +8,12 @@ export const createAuthInstance = (drizzleService: DrizzleService) => {
   const isCrossOrigin = process.env.CROSS_ORIGIN === 'true';
   const needsCrossOriginCookies = isProduction || isCrossOrigin;
 
+  const baseURL =
+    process.env.APP_URL || process.env.BASE_URL || 'http://localhost:3000';
+
   return betterAuth({
+    baseURL: baseURL,
+    basePath: '/api/auth',
     database: drizzleAdapter(drizzleService.db, {
       provider: 'pg',
       schema: authSchema,
