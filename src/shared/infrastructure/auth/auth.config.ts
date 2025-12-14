@@ -8,8 +8,11 @@ export const createAuthInstance = (drizzleService: DrizzleService) => {
   const isCrossOrigin = process.env.CROSS_ORIGIN === 'true';
   const needsCrossOriginCookies = isProduction || isCrossOrigin;
 
-  const baseURL =
-    process.env.APP_URL || process.env.BASE_URL || 'http://localhost:3000';
+  const baseURL = (
+    process.env.APP_URL ||
+    process.env.BASE_URL ||
+    'http://localhost:3000'
+  ).replace(/\/$/, '');
 
   return betterAuth({
     baseURL: baseURL,
@@ -30,8 +33,8 @@ export const createAuthInstance = (drizzleService: DrizzleService) => {
       process.env.AUTH_SECRET ||
       'dev-secret-key-please-change-in-production-at-least-32-chars',
     trustedOrigins: [
-      process.env.APP_URL || 'http://localhost:3000',
-      process.env.FRONTEND_URL || 'http://localhost:3333',
+      (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, ''),
+      (process.env.FRONTEND_URL || 'http://localhost:3333').replace(/\/$/, ''),
     ],
     advanced: {
       defaultCookieAttributes: {

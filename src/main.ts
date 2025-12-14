@@ -22,8 +22,8 @@ async function bootstrap() {
     app.use(cookieParser());
 
     const allowedOrigins = [
-      process.env.APP_URL || 'http://localhost:3000',
-      process.env.FRONTEND_URL || 'http://localhost:3333',
+      process.env.APP_URL?.replace(/\/$/, '') || 'http://localhost:3000',
+      process.env.FRONTEND_URL?.replace(/\/$/, '') || 'http://localhost:3333',
     ].filter(Boolean);
 
     console.log('🌐 CORS allowed origins:', allowedOrigins);

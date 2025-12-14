@@ -9,18 +9,46 @@ export class DrizzleService implements OnModuleDestroy {
   private client: postgres.Sql;
 
   constructor(private configService: ConfigService) {
-    const dbUser = this.configService.get('DB_USER') || 'postgres';
-    const dbPassword = this.configService.get('DB_PASSWORD') || 'postgres';
-    const dbHost = this.configService.get('DB_HOST') || 'localhost';
-    const dbPort = this.configService.get('DB_PORT') || '5432';
-    const dbName = this.configService.get('DB_NAME') || 'afiliacao_db';
+    // Railway pode fornecer DATABASE_URL ou variáveis separadas
+    // Também suporta variáveis PGHOST, PGUSER, etc.
+    const databaseUrl = this.configService.get('DATABASE_URL');
 
-    const connectionString = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+    let connectionString: string;
 
-    console.log('🔌 Connecting to database...');
-    console.log(`  - Host: ${dbHost}:${dbPort}`);
-    console.log(`  - Database: ${dbName}`);
-    console.log(`  - User: ${dbUser}`);
+    if (databaseUrl) {
+      // Usa DATABASE_URL se disponível (formato do Railway)
+      connectionString = databaseUrl;
+      console.log('🔌 Connecting to database using DATABASE_URL...');
+    } else {
+      // Usa variáveis separadas ou fallback para Railway PGHOST, etc.
+      const dbUser =
+        this.configService.get('DB_USER') ||
+        this.configService.get('PGUSER') ||
+        'postgres';
+      const dbPassword =
+        this.configService.get('DB_PASSWORD') ||
+        this.configService.get('PGPASSWORD') ||
+        'postgres';
+      const dbHost =
+        this.configService.get('DB_HOST') ||
+        this.configService.get('PGHOST') ||
+        'localhost';
+      const dbPort =
+        this.configService.get('DB_PORT') ||
+        this.configService.get('PGPORT') ||
+        '5432';
+      const dbName =
+        this.configService.get('DB_NAME') ||
+        this.configService.get('PGDATABASE') ||
+        'afiliacao_db';
+
+      connectionString = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+
+      console.log('🔌 Connecting to database...');
+      console.log(`  - Host: ${dbHost}:${dbPort}`);
+      console.log(`  - Database: ${dbName}`);
+      console.log(`  - User: ${dbUser}`);
+    }
 
     try {
       this.client = postgres(connectionString, {
