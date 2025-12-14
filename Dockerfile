@@ -9,14 +9,22 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
+# Install all dependencies (including devDependencies for build)
 RUN pnpm install --frozen-lockfile
 
+# Copy configuration files needed for build
+COPY tsconfig.json tsconfig.build.json nest-cli.json ./
+COPY drizzle.config.ts ./
+
 # Copy source code
-COPY . .
+COPY src ./src
 
 # Build the application
 RUN pnpm build
+
+# Verify build output
+RUN ls -la dist/ || (echo "Build failed - dist directory not found" && exit 1)
+RUN test -f dist/src/main.js || (echo "Build failed - dist/src/main.js not found" && exit 1)
 
 # Stage 2: Production
 FROM node:20-alpine AS production
@@ -34,7 +42,16 @@ RUN pnpm install --prod --frozen-lockfile
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
+
+# Copy database migrations and schema (if needed at runtime)
 COPY --from=builder /app/src/database ./src/database
+
+# Copy drizzle config for migrations (if needed)
+COPY --from=builder /app/drizzle.config.ts ./
+
+# Verify files are copied
+RUN ls -la dist/ || (echo "dist directory not found" && exit 1)
+RUN test -f dist/src/main.js || (echo "dist/src/main.js not found" && exit 1)
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -52,5 +69,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the application
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
 
