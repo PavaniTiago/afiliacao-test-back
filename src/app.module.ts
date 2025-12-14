@@ -5,6 +5,8 @@ import { AuthModule } from './shared/infrastructure/auth/auth.module';
 import { PlanModule } from './modules/plan/plan.module';
 import { MemberModule } from './modules/member/member.module';
 import { AffiliateModule } from './modules/affiliate/affiliate.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -18,5 +20,7 @@ import { AffiliateModule } from './modules/affiliate/affiliate.module';
     MemberModule,
     AffiliateModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
