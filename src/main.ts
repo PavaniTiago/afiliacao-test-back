@@ -39,7 +39,8 @@ async function bootstrap() {
     app.setGlobalPrefix('api');
 
     const port = process.env.PORT ?? 3000;
-    await app.listen(port);
+    // IMPORTANTE: Ouvir em 0.0.0.0 para funcionar no Railway/Docker
+    await app.listen(port, '0.0.0.0');
 
     console.log(`✅ Application is running on: http://0.0.0.0:${port}/api`);
     console.log(`🌐 Health check: http://0.0.0.0:${port}/api/health`);
