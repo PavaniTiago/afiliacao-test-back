@@ -9,15 +9,33 @@ export class DrizzleService implements OnModuleDestroy {
   private client: postgres.Sql;
 
   constructor(private configService: ConfigService) {
-    const connectionString = `postgresql://${this.configService.get('DB_USER')}:${this.configService.get('DB_PASSWORD')}@${this.configService.get('DB_HOST')}:${this.configService.get('DB_PORT')}/${this.configService.get('DB_NAME')}`;
+    const dbUser = this.configService.get('DB_USER') || 'postgres';
+    const dbPassword = this.configService.get('DB_PASSWORD') || 'postgres';
+    const dbHost = this.configService.get('DB_HOST') || 'localhost';
+    const dbPort = this.configService.get('DB_PORT') || '5432';
+    const dbName = this.configService.get('DB_NAME') || 'afiliacao_db';
 
-    this.client = postgres(connectionString, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 10,
-    });
+    const connectionString = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
 
-    this.db = drizzle(this.client);
+    console.log('🔌 Connecting to database...');
+    console.log(`  - Host: ${dbHost}:${dbPort}`);
+    console.log(`  - Database: ${dbName}`);
+    console.log(`  - User: ${dbUser}`);
+
+    try {
+      this.client = postgres(connectionString, {
+        max: 10,
+        idle_timeout: 20,
+        connect_timeout: 10,
+        onnotice: () => {}, // Suppress notices
+      });
+
+      this.db = drizzle(this.client);
+      console.log('✅ Database connection initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize database connection:', error);
+      throw error;
+    }
   }
 
   async onModuleDestroy() {
